@@ -8,15 +8,24 @@ export default class MusicCard extends Component {
     super();
     this.state = {
       loading: false,
+      favoritedSongs: [],
     };
   }
 
+  reqFavoriteSongs = async () => {
+    const req = await getFavoriteSongs();
+    this.setState({ favoritedSongs: req });
+  };
+
+  // componentDidMount() {
+  //   this.reqFavoriteSongs();
+  // }
+
   render() {
-    const reqFavoriteSongs = async () => getFavoriteSongs();
-    console.log(reqFavoriteSongs);
     const { reqAPI } = this.props;
-    const { loading } = this.state;
-    console.log(reqAPI);
+    const { loading, favoritedSongs } = this.state;
+    const favoritedSongsOnStr = favoritedSongs.map((element) => JSON.stringify(element));
+    this.reqFavoriteSongs();
     if (loading === false) {
       return (
         <div>
@@ -48,15 +57,20 @@ export default class MusicCard extends Component {
                 <label htmlFor="favoriteCheckbox">
                   Favorita
                   <input
-                  // getFavorites
+                    // getFavorites
                     type="checkbox"
                     name="favoriteCheckbox"
                     onChange={ async () => {
+                      const test = favoritedSongsOnStr;
+                      if (test.includes(JSON.stringify(element))) {
+                        test.push(element);
+                      }
+                      this.setState({ favoritedSongs: test });
                       this.setState({ loading: true });
                       await addSong(element);
                       this.setState({ loading: false });
-                    // mentoria
                     } }
+                    checked={ favoritedSongsOnStr.includes(JSON.stringify(element)) }
                     data-testid={ `checkbox-music-${element.trackId}` }
                   />
                 </label>
