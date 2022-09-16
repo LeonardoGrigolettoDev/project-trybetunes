@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import Header from '../components/Header';
 import { getUser, updateUser } from '../services/userAPI';
 import LoadingComponent from './Components/LoadingComponent';
@@ -30,7 +30,7 @@ class ProfileEdit extends React.Component {
       newEmail: userInfos.email,
       newDescription: userInfos.description,
       newImg: userInfos.image,
-    });
+    }, () => this.isSaveButtonDisabled());
   };
 
   handleChange = (event) => {
@@ -38,23 +38,24 @@ class ProfileEdit extends React.Component {
     this.isSaveButtonDisabled();
   };
 
-  handleClick = () => {
+  handleClick = async () => {
     const { newName, newEmail, newDescription, newImg } = this.state;
-    updateUser({
+    await updateUser({
       name: newName,
       email: newEmail,
       image: newImg,
       description: newDescription,
     });
+    const { history } = this.props;
+    history.push('/profile');
   };
 
   isSaveButtonDisabled = () => {
-    const { newName, newEmail, newDescription } = this.state;
-    if (newName.length > 0 && newEmail.length > 0
-      && newDescription.length > 0) {
+    const { newName, newEmail, newDescription, newImg } = this.state;
+    let validationEmail = false;
+    if (newEmail.includes('@')) validationEmail = true;
+    if (newName && newDescription && validationEmail && newImg) {
       this.setState({ disabledButton: false });
-    } else {
-      this.setState({ disabledButton: true });
     }
   };
 
@@ -71,9 +72,9 @@ class ProfileEdit extends React.Component {
                 type="text"
                 data-testid="edit-input-image"
                 id="newImg"
+                value={ newImg }
                 onChange={ this.handleChange }
               />
-              <img src={ newImg } alt="user" />
               <input
                 type="text"
                 data-testid="edit-input-name"
@@ -95,20 +96,22 @@ class ProfileEdit extends React.Component {
                 value={ newDescription }
                 onChange={ this.handleChange }
               />
-              <Link to="/profile">
-                <button
-                  data-testid="edit-button-save"
-                  type="submit"
-                  onClick={ this.handleClick }
-                  disabled={ disabledButton }
-                >
-                  Salvar
-                </button>
-              </Link>
+              <button
+                data-testid="edit-button-save"
+                type="submit"
+                onClick={ this.handleClick }
+                disabled={ disabledButton }
+              >
+                Editar perfil
+              </button>
             </div>)}
       </div>
     );
   }
 }
+
+ProfileEdit.propTypes = {
+  history: PropTypes.string.isRequired,
+};
 
 export default ProfileEdit;
